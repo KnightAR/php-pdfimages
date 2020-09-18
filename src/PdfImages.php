@@ -32,11 +32,19 @@ class PdfImages extends AbstractBinary
      *
      * @param $inputPdf
      * @param null $destinationRootFolder
+     * @param array $passedOptions
      * @return \FilesystemIterator
-     * @throws Exception\RuntimeException
      */
-    public function extractImages($inputPdf, $destinationRootFolder = null, $saveAsJpeg = true)
+    public function extractImages($inputPdf, $destinationRootFolder = null, array $passedOptions = [])
     {
+        $passedOptions = array_merge([
+            'saveAsJpeg' => true
+        ], $passedOptions);
+
+        if (isset($passedOptions['page']) && $passedOptions['page']) {
+            $passedOptions['firstPage'] = $passedOptions['lastPage'] = $passedOptions['page'];
+        }
+
         if (false === is_file($inputPdf)) {
             throw new RuntimeException(sprintf('Input file "%s" not found', $inputPdf));
         }
@@ -57,7 +65,7 @@ class PdfImages extends AbstractBinary
 
         mkdir($destinationFolder);
 
-        $options = $this->buildOptions($saveAsJpeg, $inputPdf, $destinationFolder);
+        $options = $this->buildOptions($inputPdf, $destinationFolder, $passedOptions);
 
         try {
             $this->command($options);
@@ -69,16 +77,27 @@ class PdfImages extends AbstractBinary
     }
 
     /**
-     * @param bool $saveAsJpeg
-     * @param $inputPdf
-     * @param null $destinationRootFolder
+     * @param string $inputPdf
+     * @param string $destinationFolder
+     * @param array $passedOptions
+     * @return array
      */
-    private function buildOptions($saveAsJpeg, $inputPdf, $destinationFolder)
+    private function buildOptions($inputPdf, $destinationFolder, $passedOptions = [])
     {
         $options = array();
 
-        if ($saveAsJpeg) {
+        if (isset($passedOptions['saveAsJpeg']) && $passedOptions['saveAsJpeg']) {
             $options[] = '-j';
+        }
+
+        if (isset($passedOptions['firstPage']) && $passedOptions['firstPage']) {
+            $options[] = '-f';
+            $options[] = $passedOptions['firstPage'];
+        }
+
+        if (isset($passedOptions['lastPage']) && $passedOptions['lastPage']) {
+            $options[] = '-l';
+            $options[] = $passedOptions['lastPage'];
         }
 
         $options[] = $inputPdf;

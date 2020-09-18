@@ -52,4 +52,18 @@ class PdfImagesTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(2, iterator_count($result));
     }
+
+    public function testPageOption()
+    {
+        $result = $this->pdfImages->extractImages(dirname(__DIR__) . '/Resources/test_gif2.pdf', null, ['page' => 1]);
+
+        $this->assertSame(2, iterator_count($result));
+    }
+
+    public function testFirstLastPageOption()
+    {
+        $result = $this->pdfImages->extractImages(dirname(__DIR__) . '/Resources/test_gif2.pdf', null, ['firstPage' => 1, 'lastPage' => 1]);
+
+        $this->assertSame(2, iterator_count($result));
+    }
 }
